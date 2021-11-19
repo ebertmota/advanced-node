@@ -1,0 +1,7 @@
+{
+  "name": "advanced-node",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "ebertmota <ebert.mota03@gmail.com>",
+  "license": "MIT"
+}
