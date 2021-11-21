@@ -1,28 +1,19 @@
 import { LoadFacebookUserApi } from '@/data/contracts/apis';
+import { FacebookAuthenticationService } from '@/data/services/facebook-authentication';
 import { AuthenticationError } from '@/domain/errors';
-import { FacebookAuthentication } from '@/domain/features';
-
-class FacebookAuthenticationService {
-  constructor(
-    private readonly loadFacebookUserByTokenApi: LoadFacebookUserApi,
-  ) {}
-
-  async perform(
-    params: FacebookAuthentication.Params,
-  ): Promise<AuthenticationError> {
-    await this.loadFacebookUserByTokenApi.loadUser(params);
-    return new AuthenticationError();
-  }
-}
 
 class LoadFacebookUserApiSpy implements LoadFacebookUserApi {
   token?: string;
+
+  callsCount = 0;
 
   result?: undefined;
 
   async loadUser(
     params: LoadFacebookUserApi.Params,
   ): Promise<LoadFacebookUserApi.Result> {
+    // eslint-disable-next-line no-plusplus
+    this.callsCount++;
     this.token = params.token;
     return this.result;
   }
@@ -43,6 +34,7 @@ describe('FacebookAuthenticationService', () => {
     });
 
     expect(loadFacebookUserApi.token).toBe('any_token');
+    expect(loadFacebookUserApi.callsCount).toBe(1);
   });
 
   it('should return AuthenticationError when LoadFacebookUserApi returns undefined', async () => {
