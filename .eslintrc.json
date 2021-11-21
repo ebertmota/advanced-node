@@ -18,6 +18,8 @@
         "prettier"
     ],
     "rules": {
+      "no-useless-constructor": "off",
+      "max-classes-per-file": "off",
       "import/prefer-default-export": "off",
       "@typescript-eslint/no-namespace": "off",
       "prettier/prettier": "error",
