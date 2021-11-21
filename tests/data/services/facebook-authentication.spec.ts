@@ -5,10 +5,12 @@ import { AuthenticationError } from '@/domain/errors';
 import {
   CreateFacebookAccountRepository,
   LoadUserAccountRepository,
+  UpdateFacebookAccountRepository,
 } from '@/data/contracts/repos';
 
 type UserAccountRepo = LoadUserAccountRepository &
-  CreateFacebookAccountRepository;
+  CreateFacebookAccountRepository &
+  UpdateFacebookAccountRepository;
 
 describe('FacebookAuthenticationService', () => {
   let facebookApi: MockProxy<LoadFacebookUserApi>;
@@ -62,7 +64,7 @@ describe('FacebookAuthenticationService', () => {
     expect(userAccountRepo.load).toHaveBeenCalledTimes(1);
   });
 
-  it('should call CreateUserAccountRepo when LoadUserAccountRepo returns undefined', async () => {
+  it('should call CreateFacebookAccountRepo when LoadUserAccountRepo returns undefined', async () => {
     userAccountRepo.load.mockResolvedValueOnce(undefined);
 
     await sut.perform({
@@ -75,5 +77,23 @@ describe('FacebookAuthenticationService', () => {
       facebook_id: 'any_fb_id',
     });
     expect(userAccountRepo.createFromFacebook).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call UpdateFacebookAccountRepo when LoadUserAccountRepo returns data', async () => {
+    userAccountRepo.load.mockResolvedValueOnce({
+      id: 'any_id',
+      name: 'any_name',
+    });
+
+    await sut.perform({
+      token,
+    });
+
+    expect(userAccountRepo.updateWithFacebook).toHaveBeenCalledWith({
+      id: 'any_id',
+      name: 'any_name',
+      facebook_id: 'any_fb_id',
+    });
+    expect(userAccountRepo.updateWithFacebook).toHaveBeenCalledTimes(1);
   });
 });
