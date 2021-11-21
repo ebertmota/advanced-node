@@ -5,6 +5,7 @@
   "author": "ebertmota <ebert.mota03@gmail.com>",
   "license": "MIT",
   "scripts": {
+    "prepare": "husky install",
     "start": "node dist",
     "build": "rimraf disc && tsc -p tsconfig-build.json",
     "lint": "eslint .",
