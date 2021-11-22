@@ -31,5 +31,7 @@ export namespace SaveFacebookAccountRepository {
     name: string;
   };
 
-  export type Result = void;
+  export type Result = {
+    id: string;
+  };
 }
