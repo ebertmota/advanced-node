@@ -7,7 +7,7 @@ import {
   LoadUserAccountRepository,
   SaveFacebookAccountRepository,
 } from '@/data/contracts/repos';
-import { FacebookAccount } from '@/domain/models';
+import { AccessToken, FacebookAccount } from '@/domain/models';
 import { TokenGenerator } from '@/data/contracts/crypto';
 
 type UserAccountRepo = LoadUserAccountRepository &
@@ -102,6 +102,7 @@ describe('FacebookAuthenticationService', () => {
 
     expect(crypto.generateToken).toHaveBeenCalledWith({
       key: 'any_account_id',
+      expirationInMs: AccessToken.expirationInMs,
     });
     expect(crypto.generateToken).toHaveBeenCalledTimes(1);
   });
