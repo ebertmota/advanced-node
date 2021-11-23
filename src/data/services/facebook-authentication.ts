@@ -26,13 +26,11 @@ export class FacebookAuthenticationService implements FacebookAuthentication {
         email: fbData.email,
       });
       const fbAccount = new FacebookAccount(fbData, accountData);
-
       const { id } = await this.userAccountRepo.saveWithFacebook(fbAccount);
       const token = await this.crypto.generateToken({
         key: id,
         expirationInMs: AccessToken.expirationInMs,
       });
-
       return new AccessToken(token);
     }
 
