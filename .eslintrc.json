@@ -18,6 +18,7 @@
         "prettier"
     ],
     "rules": {
+      "class-methods-use-this": "off",
       "camelcase": "off",
       "no-useless-constructor": "off",
       "max-classes-per-file": "off",
