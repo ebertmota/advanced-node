@@ -1,15 +1,7 @@
 import axios from 'axios';
-import { HttpGetClient } from '@/infra/http';
+import { AxiosHttpClient, HttpGetClient } from '@/infra/http';
 
 jest.mock('axios');
-
-class AxiosHttpClient {
-  async get(agrs: HttpGetClient.Params): Promise<any> {
-    const result = await axios.get(agrs.url, { params: agrs.params });
-
-    return result.data;
-  }
-}
 
 const makeFakeParams = (): HttpGetClient.Params => ({
   url: 'any_url',
