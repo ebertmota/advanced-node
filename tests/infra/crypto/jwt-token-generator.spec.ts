@@ -4,12 +4,16 @@ import { TokenGenerator } from '@/data/contracts/crypto';
 class JwtTokenGenerator {
   constructor(private readonly secret: string) {}
 
-  async generateToken(params: TokenGenerator.Params): Promise<void> {
+  async generateToken(
+    params: TokenGenerator.Params,
+  ): Promise<TokenGenerator.Result> {
     const expirationInSeconds = params.expirationInMs / 1000;
 
-    jwt.sign({ key: params.key }, this.secret, {
+    const token = jwt.sign({ key: params.key }, this.secret, {
       expiresIn: expirationInSeconds,
     });
+
+    return token;
   }
 }
 
@@ -24,6 +28,7 @@ describe('JwtTokenGenerator', () => {
   beforeAll(() => {
     secretKey = 'any_secret';
     fakeJwt = jwt as jest.Mocked<typeof jwt>;
+    fakeJwt.sign.mockImplementation(() => 'any_token');
     sutParams = {
       key: 'any_key',
       expirationInMs: 1000,
@@ -44,5 +49,11 @@ describe('JwtTokenGenerator', () => {
         expiresIn: 1,
       },
     );
+  });
+
+  it('should return a token on success', async () => {
+    const token = await sut.generateToken(sutParams);
+
+    expect(token).toBe('any_token');
   });
 });
