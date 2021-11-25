@@ -68,5 +68,13 @@ describe('PgUserAccountRepository', () => {
 
       expect(account).toEqual({ id: '1' });
     });
+
+    it('should return undefined if email not exists', async () => {
+      const account = await sut.load({
+        email: 'new_email',
+      });
+
+      expect(account).toBe(undefined);
+    });
   });
 });
