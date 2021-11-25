@@ -56,4 +56,15 @@ describe('JwtTokenGenerator', () => {
 
     expect(token).toBe('any_token');
   });
+
+  it('should rethrow if sign throws ', async () => {
+    const jwtError = new Error('Jsonwebtoken fails');
+    fakeJwt.sign.mockImplementationOnce(() => {
+      throw jwtError;
+    });
+
+    const promise = sut.generateToken(sutParams);
+
+    await expect(promise).rejects.toEqual(jwtError);
+  });
 });
