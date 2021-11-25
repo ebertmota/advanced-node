@@ -1,5 +1,12 @@
-import { newDb } from 'pg-mem';
-import { Column, Entity, getRepository, PrimaryGeneratedColumn } from 'typeorm';
+import { IBackup, newDb } from 'pg-mem';
+import {
+  Column,
+  Entity,
+  getConnection,
+  getRepository,
+  PrimaryGeneratedColumn,
+  Repository,
+} from 'typeorm';
 import { LoadUserAccountRepository } from '@/data/contracts/repos';
 
 @Entity({ name: 'users' })
@@ -39,6 +46,8 @@ class PgUserAccountRepository implements LoadUserAccountRepository {
 describe('PgUserAccountRepository', () => {
   describe('load', () => {
     let sut: PgUserAccountRepository;
+    let pgUserRepo: Repository<PgUser>;
+    let backup: IBackup;
 
     beforeAll(async () => {
       const db = newDb();
@@ -51,17 +60,22 @@ describe('PgUserAccountRepository', () => {
         entities: [PgUser],
       });
       await connection.synchronize();
-      const pgUserRepo = getRepository(PgUser);
-      await pgUserRepo.save({
-        email: 'existing_email',
-      });
+      backup = db.backup();
+      pgUserRepo = getRepository(PgUser);
+    });
+
+    afterAll(async () => {
+      await getConnection().close();
     });
 
     beforeEach(() => {
+      backup.restore();
       sut = new PgUserAccountRepository();
     });
 
     it('should return an account if email exists', async () => {
+      await pgUserRepo.save({ email: 'existing_email' });
+
       const account = await sut.load({
         email: 'existing_email',
       });
