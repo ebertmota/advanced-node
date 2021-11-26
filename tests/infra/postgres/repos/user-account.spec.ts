@@ -1,47 +1,21 @@
-import { IBackup, newDb } from 'pg-mem';
-import {
-  Column,
-  Entity,
-  getConnection,
-  getRepository,
-  PrimaryGeneratedColumn,
-  Repository,
-} from 'typeorm';
-import { LoadUserAccountRepository } from '@/data/contracts/repos';
+import { IBackup, IMemoryDb, newDb } from 'pg-mem';
+import { getConnection, getRepository, Repository } from 'typeorm';
+import { PgUser } from '@/infra/postgres/entities';
+import { PgUserAccountRepository } from '@/infra/postgres/repos';
 
-@Entity({ name: 'users' })
-class PgUser {
-  @PrimaryGeneratedColumn()
-  id!: number;
-
-  @Column()
-  email!: string;
-
-  @Column({ nullable: true })
-  name?: string;
-
-  @Column({ nullable: true })
-  facebook_id?: string;
-}
-
-class PgUserAccountRepository implements LoadUserAccountRepository {
-  async load(
-    params: LoadUserAccountRepository.Params,
-  ): Promise<LoadUserAccountRepository.Result> {
-    const pgUserRepo = getRepository(PgUser);
-
-    const user = await pgUserRepo.findOne({
-      email: params.email,
-    });
-
-    if (!user) return undefined;
-
-    return {
-      id: user.id.toString(),
-      name: user.name ?? undefined,
-    };
-  }
-}
+const makeFakeDb = async (entities?: any[]): Promise<IMemoryDb> => {
+  const db = newDb();
+  db.public.registerFunction({
+    name: 'current_database',
+    implementation: () => 'test',
+  });
+  const connection = await db.adapters.createTypeormConnection({
+    type: 'postgres',
+    entities: entities ?? [PgUser],
+  });
+  await connection.synchronize();
+  return db;
+};
 
 describe('PgUserAccountRepository', () => {
   describe('load', () => {
@@ -50,16 +24,7 @@ describe('PgUserAccountRepository', () => {
     let backup: IBackup;
 
     beforeAll(async () => {
-      const db = newDb();
-      db.public.registerFunction({
-        name: 'current_database',
-        implementation: () => 'test',
-      });
-      const connection = await db.adapters.createTypeormConnection({
-        type: 'postgres',
-        entities: [PgUser],
-      });
-      await connection.synchronize();
+      const db = await makeFakeDb([PgUser]);
       backup = db.backup();
       pgUserRepo = getRepository(PgUser);
     });
