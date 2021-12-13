@@ -1,5 +1,6 @@
 import { mock, MockProxy } from 'jest-mock-extended';
 import { FacebookAuthentication } from '@/domain/features';
+import { AuthenticationError } from '@/domain/errors';
 
 type HttpResponse = {
   statusCode: number;
@@ -12,12 +13,20 @@ class FacebookLoginController {
   ) {}
 
   async handle(httpRequest: any): Promise<HttpResponse> {
-    await this.facebookAuthentication.perform({
+    if (!httpRequest.token) {
+      return {
+        statusCode: 400,
+        data: new Error('token is required'),
+      };
+    }
+
+    const result = await this.facebookAuthentication.perform({
       token: httpRequest.token,
     });
+
     return {
-      statusCode: 400,
-      data: new Error('token is required'),
+      statusCode: 401,
+      data: result,
     };
   }
 }
@@ -26,8 +35,11 @@ describe('FacebookLoginController', () => {
   let facebookAuth: MockProxy<FacebookAuthentication>;
   let sut: FacebookLoginController;
 
-  beforeEach(() => {
+  beforeAll(() => {
     facebookAuth = mock();
+  });
+
+  beforeEach(() => {
     sut = new FacebookLoginController(facebookAuth);
   });
 
@@ -67,5 +79,16 @@ describe('FacebookLoginController', () => {
 
     expect(facebookAuth.perform).toHaveBeenCalledWith(sutParams);
     expect(facebookAuth.perform).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return 401 if authentication fails', async () => {
+    const error = new AuthenticationError();
+    facebookAuth.perform.mockResolvedValueOnce(error);
+    const httpResponse = await sut.handle({ token: 'any_token' });
+
+    expect(httpResponse).toEqual({
+      statusCode: 401,
+      data: error,
+    });
   });
 });
