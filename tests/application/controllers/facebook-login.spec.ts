@@ -27,4 +27,13 @@ describe('FacebookLoginController', () => {
       data: new Error('token is required'),
     });
   });
+
+  it('should return 400 if token is null', async () => {
+    const httpResponse = await sut.handle({ token: null });
+
+    expect(httpResponse).toEqual({
+      statusCode: 400,
+      data: new Error('token is required'),
+    });
+  });
 });
