@@ -1,56 +1,9 @@
 import { mock, MockProxy } from 'jest-mock-extended';
+import { ServerError } from '@/application/errors';
 import { FacebookAuthentication } from '@/domain/features';
 import { AuthenticationError } from '@/domain/errors';
 import { AccessToken } from '@/domain/models';
-
-type HttpResponse = { statusCode: number; data: any };
-
-class ServerError extends Error {
-  constructor(error?: Error) {
-    super('Internal server error, try again soon');
-    this.name = 'ServerError';
-    this.stack = error?.stack;
-  }
-}
-
-class FacebookLoginController {
-  constructor(
-    private readonly facebookAuthentication: FacebookAuthentication,
-  ) {}
-
-  async handle(httpRequest: any): Promise<HttpResponse> {
-    try {
-      if (!httpRequest.token) {
-        return {
-          statusCode: 400,
-          data: new Error('The field token is required'),
-        };
-      }
-
-      const result = await this.facebookAuthentication.perform({
-        token: httpRequest.token,
-      });
-
-      if (result instanceof AccessToken) {
-        return {
-          statusCode: 200,
-          data: {
-            accessToken: result.value,
-          },
-        };
-      }
-      return {
-        statusCode: 401,
-        data: result,
-      };
-    } catch (error) {
-      return {
-        statusCode: 500,
-        data: new ServerError(error as Error),
-      };
-    }
-  }
-}
+import { FacebookLoginController } from '@/application/controllers';
 
 describe('FacebookLoginController', () => {
   let facebookAuth: MockProxy<FacebookAuthentication>;
@@ -77,7 +30,7 @@ describe('FacebookLoginController', () => {
   });
 
   it('should return 400 if token is null', async () => {
-    const result = await sut.handle({ token: null });
+    const result = await sut.handle({ token: null! });
 
     expect(result).toEqual({
       statusCode: 400,
@@ -86,7 +39,7 @@ describe('FacebookLoginController', () => {
   });
 
   it('should return 400 if token is undefined', async () => {
-    const result = await sut.handle({ token: undefined });
+    const result = await sut.handle({ token: undefined! });
 
     expect(result).toEqual({
       statusCode: 400,
