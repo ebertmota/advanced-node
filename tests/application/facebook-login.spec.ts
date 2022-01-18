@@ -1,5 +1,10 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { mock, MockProxy } from 'jest-mock-extended';
-import { ServerError } from '@/application/errors';
+import {
+  ServerError,
+  RequiredFieldError,
+  UnauthorizedError,
+} from '@/application/errors';
 import { FacebookAuthentication } from '@/domain/features';
 import { AuthenticationError } from '@/domain/errors';
 import { AccessToken } from '@/domain/models';
@@ -25,7 +30,7 @@ describe('FacebookLoginController', () => {
 
     expect(result).toEqual({
       statusCode: 400,
-      data: new Error('The field token is required'),
+      data: new RequiredFieldError('token'),
     });
   });
 
@@ -34,7 +39,7 @@ describe('FacebookLoginController', () => {
 
     expect(result).toEqual({
       statusCode: 400,
-      data: new Error('The field token is required'),
+      data: new RequiredFieldError('token'),
     });
   });
 
@@ -43,7 +48,7 @@ describe('FacebookLoginController', () => {
 
     expect(result).toEqual({
       statusCode: 400,
-      data: new Error('The field token is required'),
+      data: new RequiredFieldError('token'),
     });
   });
 
@@ -63,7 +68,7 @@ describe('FacebookLoginController', () => {
 
     expect(result).toEqual({
       statusCode: 401,
-      data: error,
+      data: new UnauthorizedError(),
     });
   });
 
