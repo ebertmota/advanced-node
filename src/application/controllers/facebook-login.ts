@@ -6,6 +6,7 @@ import {
   HttpResponse,
   serverError,
   unauthorized,
+  ok,
 } from '../helpers';
 
 export namespace FacebookLoginProtocols {
@@ -32,12 +33,9 @@ export class FacebookLoginController {
       });
 
       if (accessToken instanceof AccessToken) {
-        return {
-          statusCode: 200,
-          data: {
-            accessToken: accessToken.value,
-          },
-        };
+        return ok({
+          accessToken: accessToken.value,
+        });
       }
 
       return unauthorized();
