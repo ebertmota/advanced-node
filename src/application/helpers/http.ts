@@ -1,4 +1,4 @@
-import { UnauthorizedError } from '../errors';
+import { ServerError, UnauthorizedError } from '../errors';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type HttpResponse = { statusCode: number; data: any };
@@ -11,4 +11,9 @@ export const badRequest = (error: Error): HttpResponse => ({
 export const unauthorized = (): HttpResponse => ({
   statusCode: 401,
   data: new UnauthorizedError(),
+});
+
+export const serverError = (error: unknown): HttpResponse => ({
+  statusCode: 500,
+  data: new ServerError(error as Error),
 });
