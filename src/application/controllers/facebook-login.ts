@@ -11,7 +11,7 @@ import {
 
 export namespace FacebookLoginProtocols {
   export type Request = {
-    token: string | undefined | null;
+    token: string;
   };
 }
 
@@ -30,8 +30,9 @@ export class FacebookLoginController {
 
   async handle(httpRequest: Request): Promise<HttpResponse<Model>> {
     try {
-      if (!httpRequest.token) {
-        return badRequest(new RequiredFieldError('token'));
+      const error = this.validate(httpRequest);
+      if (error) {
+        return badRequest(error);
       }
 
       const accessToken = await this.facebookAuthentication.perform({
@@ -48,5 +49,13 @@ export class FacebookLoginController {
     } catch (error) {
       return serverError(error);
     }
+  }
+
+  private validate(httpRequest: Request): Error | undefined {
+    if (!httpRequest.token) {
+      return new RequiredFieldError('token');
+    }
+
+    return undefined;
   }
 }

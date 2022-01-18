@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { mock, MockProxy } from 'jest-mock-extended';
 import {
   ServerError,
@@ -35,7 +35,7 @@ describe('FacebookLoginController', () => {
   });
 
   it('should return 400 if token is null', async () => {
-    const result = await sut.handle({ token: null! });
+    const result = await sut.handle({ token: null as any });
 
     expect(result).toEqual({
       statusCode: 400,
@@ -44,7 +44,7 @@ describe('FacebookLoginController', () => {
   });
 
   it('should return 400 if token is undefined', async () => {
-    const result = await sut.handle({ token: undefined! });
+    const result = await sut.handle({ token: undefined as any });
 
     expect(result).toEqual({
       statusCode: 400,
