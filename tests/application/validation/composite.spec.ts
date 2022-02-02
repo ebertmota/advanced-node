@@ -1,25 +1,5 @@
-/* eslint-disable consistent-return */
-/* eslint-disable no-unreachable-loop */
-/* eslint-disable no-restricted-syntax */
 import { mock, MockProxy } from 'jest-mock-extended';
-
-interface Validator {
-  validate: () => Error | undefined;
-}
-
-class ValidationComposite implements Validator {
-  constructor(private readonly validators: Validator[]) {}
-
-  validate(): Error | undefined {
-    for (const validator of this.validators) {
-      const error = validator.validate();
-
-      if (error !== undefined) {
-        return error;
-      }
-    }
-  }
-}
+import { ValidationComposite, Validator } from '@/application/validation';
 
 describe('ValidationComposite', () => {
   let sut: ValidationComposite;
