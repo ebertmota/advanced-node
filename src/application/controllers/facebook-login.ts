@@ -1,17 +1,8 @@
 import { FacebookAuthentication } from '@/domain/features';
 import { AccessToken } from '@/domain/models';
-import {
-  badRequest,
-  HttpResponse,
-  serverError,
-  unauthorized,
-  ok,
-} from '../helpers';
-import {
-  RequiredStringValidator,
-  ValidationBuilder,
-  ValidationComposite,
-} from '../validation';
+import { Controller } from '.';
+import { HttpResponse, unauthorized, ok } from '../helpers';
+import { ValidationBuilder, Validator } from '../validation';
 
 export namespace FacebookLoginProtocols {
   export type Request = {
@@ -27,42 +18,29 @@ type Model =
       accessToken: string;
     };
 
-export class FacebookLoginController {
-  constructor(
-    private readonly facebookAuthentication: FacebookAuthentication,
-  ) {}
-
-  async handle(httpRequest: Request): Promise<HttpResponse<Model>> {
-    try {
-      const error = this.validate(httpRequest);
-      if (error) {
-        return badRequest(error);
-      }
-
-      const accessToken = await this.facebookAuthentication.perform({
-        token: httpRequest.token,
-      });
-
-      if (accessToken instanceof AccessToken) {
-        return ok({
-          accessToken: accessToken.value,
-        });
-      }
-
-      return unauthorized();
-    } catch (error) {
-      return serverError(error);
-    }
+export class FacebookLoginController extends Controller {
+  constructor(private readonly facebookAuthentication: FacebookAuthentication) {
+    super();
   }
 
-  private validate(httpRequest: Request): Error | undefined {
-    const validators = ValidationBuilder.of({
+  async perform(httpRequest: Request): Promise<HttpResponse<Model>> {
+    const accessToken = await this.facebookAuthentication.perform({
+      token: httpRequest.token,
+    });
+
+    return accessToken instanceof AccessToken
+      ? ok({
+          accessToken: accessToken.value,
+        })
+      : unauthorized();
+  }
+
+  override buildValidators(httpRequest: Request): Validator[] {
+    return ValidationBuilder.of({
       value: httpRequest.token,
       fieldName: 'token',
     })
       .required()
       .build();
-
-    return new ValidationComposite(validators).validate();
   }
 }
