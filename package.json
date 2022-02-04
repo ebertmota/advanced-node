@@ -13,7 +13,8 @@
     "test": "jest --passWithNoTests --no-cache --runInBand",
     "test:staged": "yarn test --findRelatedTests",
     "test:watch": "yarn test --watch",
-    "test:coverage": "yarn test --coverage"
+    "test:coverage": "yarn test --coverage",
+    "test:external": "yarn test -c ./jest.integration.config.js"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
