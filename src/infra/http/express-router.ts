@@ -1,11 +1,9 @@
-import { Request, Response } from 'express';
+import { RequestHandler } from 'express';
 import { Controller } from '@/application/controllers';
 
-export class ExpressRouter {
-  constructor(private readonly controller: Controller) {}
-
-  async adapt(req: Request, res: Response): Promise<void> {
-    const { statusCode, data } = await this.controller.handle({
+export const adaptExpressRoute = (controller: Controller): RequestHandler => {
+  return async (req, res) => {
+    const { statusCode, data } = await controller.handle({
       ...req.body,
     });
     if (statusCode === 200) {
@@ -13,5 +11,5 @@ export class ExpressRouter {
     } else {
       res.status(statusCode).json({ error: data.message });
     }
-  }
-}
+  };
+};
