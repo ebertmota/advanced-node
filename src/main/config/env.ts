@@ -7,4 +7,5 @@ export const env = {
       'EAAJHA0yw77EBADui5wAsfsI3c0axSOGwi1Q6FpZCTwjbZCrtIpVyCL2Qdp66sKA0bWqmaLrxcOLIGMEVJkdhYdak3XOrUmYo9FlEpmNO4UsKleELRbV2fkyEPZAXWbukwwhUm12Ys8pP6bp4mr3K8ZBkFa9jTs9kfVN9gZACwGb9WLGZCGoezVsMYpRHWSv7aVJZAhtbD5WzbaMVB5UatPq',
   },
   appPort: process.env.APP_PORT ?? 3333,
+  jwtSecret: process.env.JWT_SECRET || 'ajdlaksdjlaskjd',
 };
