@@ -14,11 +14,15 @@ class ExpressRouter {
 }
 
 describe('ExpressRouter', () => {
+  let req: Request;
+  let res: Response;
   let controller: MockProxy<Controller>;
   let sut: ExpressRouter;
 
   beforeAll(() => {
-    controller = mock<Controller>();
+    req = getMockReq({ body: { any: 'any' } });
+    res = getMockRes().res;
+    controller = mock();
   });
 
   beforeEach(() => {
@@ -26,20 +30,14 @@ describe('ExpressRouter', () => {
   });
 
   it('should call handle with correct request', async () => {
-    const data = { any: 'any' };
-    const req = getMockReq({ body: data });
-    const { res } = getMockRes();
-
     await sut.adapt(req, res);
 
-    expect(controller.handle).toHaveBeenCalledWith(data);
+    expect(controller.handle).toHaveBeenCalledWith({ any: 'any' });
   });
 
   it('should call handle with empty request', async () => {
-    const req = getMockReq();
-    const { res } = getMockRes();
-
-    await sut.adapt(req, res);
+    const request = getMockReq();
+    await sut.adapt(request, res);
 
     expect(controller.handle).toHaveBeenCalledWith({});
   });
