@@ -34,4 +34,13 @@ describe('ExpressRouter', () => {
 
     expect(controller.handle).toHaveBeenCalledWith(data);
   });
+
+  it('should call handle with empty request', async () => {
+    const req = getMockReq();
+    const { res } = getMockRes();
+
+    await sut.adapt(req, res);
+
+    expect(controller.handle).toHaveBeenCalledWith({});
+  });
 });
