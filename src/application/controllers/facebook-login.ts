@@ -23,9 +23,9 @@ export class FacebookLoginController extends Controller {
     super();
   }
 
-  async perform(httpRequest: Request): Promise<HttpResponse<Model>> {
+  async perform({ token }: Request): Promise<HttpResponse<Model>> {
     const accessToken = await this.facebookAuthentication.perform({
-      token: httpRequest.token,
+      token,
     });
 
     return accessToken instanceof AccessToken
@@ -35,9 +35,9 @@ export class FacebookLoginController extends Controller {
       : unauthorized();
   }
 
-  override buildValidators(httpRequest: Request): Validator[] {
+  override buildValidators({ token }: Request): Validator[] {
     return ValidationBuilder.of({
-      value: httpRequest.token,
+      value: token,
       fieldName: 'token',
     })
       .required()
