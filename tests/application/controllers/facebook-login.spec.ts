@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { mock, MockProxy } from 'jest-mock-extended';
+import { mock } from 'jest-mock-extended';
 import { UnauthorizedError } from '@/application/errors';
-import { FacebookAuthentication } from '@/domain/features';
 import { AuthenticationError } from '@/domain/entities/errors';
 import { AccessToken } from '@/domain/entities';
 import { FacebookLoginController } from '@/application/controllers';
@@ -10,7 +9,7 @@ import { RequiredStringValidator } from '@/application/validation';
 jest.mock('@/application/validation/composite');
 
 describe('FacebookLoginController', () => {
-  let facebookAuth: MockProxy<FacebookAuthentication>;
+  let facebookAuth: jest.Mock;
   let accessToken: AccessToken;
   let sut: FacebookLoginController;
   let token: string;
@@ -19,7 +18,7 @@ describe('FacebookLoginController', () => {
     facebookAuth = mock();
     token = 'any_token';
     accessToken = new AccessToken('any_value');
-    facebookAuth.perform.mockResolvedValue(accessToken);
+    facebookAuth = jest.fn();
   });
 
   beforeEach(() => {
@@ -35,15 +34,15 @@ describe('FacebookLoginController', () => {
   it('should call FacebookAuthentication with correct params', async () => {
     await sut.handle({ token });
 
-    expect(facebookAuth.perform).toHaveBeenCalledWith({
+    expect(facebookAuth).toHaveBeenCalledWith({
       token,
     });
-    expect(facebookAuth.perform).toHaveBeenCalledTimes(1);
+    expect(facebookAuth).toHaveBeenCalledTimes(1);
   });
 
   it('should return 401 if authentication fails', async () => {
     const error = new AuthenticationError();
-    facebookAuth.perform.mockResolvedValueOnce(error);
+    facebookAuth.mockResolvedValueOnce(error);
     const result = await sut.handle({ token });
 
     expect(result).toEqual({
