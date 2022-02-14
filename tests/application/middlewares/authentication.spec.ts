@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { HttpResponse, forbidden } from '@/application/helpers';
+import { HttpResponse, forbidden, ok } from '@/application/helpers';
 import { ForbiddenError } from '@/application/errors';
 import { RequiredStringValidator } from '@/application/validation';
 import { Authorize } from '@/domain/use-cases';
@@ -8,12 +8,12 @@ type Request = {
   authorization: string;
 };
 
+type Model = Error | { user_id: string };
+
 class AuthenticationMiddleware {
   constructor(private readonly authorize: Authorize) {}
 
-  async handle({
-    authorization,
-  }: Request): Promise<HttpResponse<Error> | undefined> {
+  async handle({ authorization }: Request): Promise<HttpResponse<Model>> {
     const error = new RequiredStringValidator(
       authorization,
       'authorization',
@@ -24,14 +24,14 @@ class AuthenticationMiddleware {
     }
 
     try {
-      await this.authorize({
+      const user_id = await this.authorize({
         token: authorization,
       });
+
+      return ok({ user_id });
     } catch {
       return forbidden();
     }
-
-    return undefined;
   }
 }
 
@@ -42,7 +42,7 @@ describe('AuthenticationMiddleware', () => {
 
   beforeAll(() => {
     authorization = 'any_authorization';
-    authorize = jest.fn();
+    authorize = jest.fn().mockResolvedValue('any_user_id');
   });
 
   beforeEach(() => {
@@ -90,6 +90,17 @@ describe('AuthenticationMiddleware', () => {
     expect(response).toEqual({
       statusCode: 403,
       data: new ForbiddenError(),
+    });
+  });
+
+  it('should return 200 with user_id on success', async () => {
+    const response = await sut.handle({ authorization });
+
+    expect(response).toEqual({
+      statusCode: 200,
+      data: {
+        user_id: 'any_user_id',
+      },
     });
   });
 });
