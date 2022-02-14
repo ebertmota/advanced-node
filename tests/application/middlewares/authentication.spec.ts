@@ -14,12 +14,9 @@ class AuthenticationMiddleware {
   constructor(private readonly authorize: Authorize) {}
 
   async handle({ authorization }: Request): Promise<HttpResponse<Model>> {
-    const error = new RequiredStringValidator(
-      authorization,
-      'authorization',
-    ).validate();
+    const isValid = this.validate({ authorization });
 
-    if (error !== undefined) {
+    if (!isValid) {
       return forbidden();
     }
 
@@ -32,6 +29,15 @@ class AuthenticationMiddleware {
     } catch {
       return forbidden();
     }
+  }
+
+  private validate({ authorization }: Request): boolean {
+    const error = new RequiredStringValidator(
+      authorization,
+      'authorization',
+    ).validate();
+
+    return error === undefined;
   }
 }
 
