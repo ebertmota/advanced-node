@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { TokenGenerator } from '@/domain/contracts/crypto';
+import { TokenGenerator, TokenValidator } from '@/domain/contracts/crypto';
 import { JwtTokenHandler } from '@/infra/crypto';
 
 jest.mock('jsonwebtoken');
@@ -41,6 +41,7 @@ describe('JwtTokenGenerator', () => {
           expiresIn: 1,
         },
       );
+      expect(fakeJwt.sign).toHaveBeenCalledTimes(1);
     });
 
     it('should return a token on success', async () => {
@@ -58,6 +59,23 @@ describe('JwtTokenGenerator', () => {
       const promise = sut.generateToken(sutParams);
 
       await expect(promise).rejects.toEqual(jwtError);
+    });
+  });
+
+  describe('validateToken', () => {
+    let sutParams: TokenValidator.Params;
+
+    beforeAll(() => {
+      sutParams = {
+        token: 'any_token',
+      };
+    });
+
+    it('should call sign with correct params', async () => {
+      await sut.validateToken(sutParams);
+
+      expect(fakeJwt.verify).toHaveBeenCalledWith(sutParams.token, secretKey);
+      expect(fakeJwt.verify).toHaveBeenCalledTimes(1);
     });
   });
 });
