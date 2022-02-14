@@ -1,22 +1,48 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpResponse, forbidden } from '@/application/helpers';
 import { ForbiddenError } from '@/application/errors';
+import { RequiredStringValidator } from '@/application/validation';
+import { Authorize } from '@/domain/use-cases';
 
 type Request = {
   authorization: string;
 };
 
 class AuthenticationMiddleware {
-  async handle(request: Request): Promise<HttpResponse<Error>> {
-    return forbidden();
+  constructor(private readonly authorize: Authorize) {}
+
+  async handle({
+    authorization,
+  }: Request): Promise<HttpResponse<Error> | undefined> {
+    const error = new RequiredStringValidator(
+      authorization,
+      'authorization',
+    ).validate();
+
+    if (error !== undefined) {
+      return forbidden();
+    }
+
+    await this.authorize({
+      token: authorization,
+    });
+
+    return undefined;
   }
 }
 
 describe('AuthenticationMiddleware', () => {
+  let authorize: jest.Mock;
   let sut: AuthenticationMiddleware;
+  let authorization: string;
+
+  beforeAll(() => {
+    authorization = 'any_authorization';
+    authorize = jest.fn();
+  });
 
   beforeEach(() => {
-    sut = new AuthenticationMiddleware();
+    sut = new AuthenticationMiddleware(authorize);
   });
 
   it('should return 403 if authorization is empty', async () => {
@@ -44,5 +70,12 @@ describe('AuthenticationMiddleware', () => {
       statusCode: 403,
       data: new ForbiddenError(),
     });
+  });
+
+  it('should call Authorize with correct input', async () => {
+    await sut.handle({ authorization });
+
+    expect(authorize).toHaveBeenCalledWith({ token: authorization });
+    expect(authorize).toHaveBeenCalledTimes(1);
   });
 });
