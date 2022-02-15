@@ -1,26 +1,8 @@
 import { getMockReq, getMockRes } from '@jest-mock/express';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { mock, MockProxy } from 'jest-mock-extended';
-import { HttpResponse } from '@/application/helpers';
-
-type Adapter = (middleware: Middleware) => RequestHandler;
-
-const adaptExpressMiddleware: Adapter =
-  middleware => async (req, res, next) => {
-    const { statusCode, data } = await middleware.handle({ ...req.headers });
-    if (statusCode === 200) {
-      const validEntries = Object.entries(data).filter(entry => entry[1]);
-      const validData = Object.fromEntries(validEntries);
-      req.locals = { ...req.locals, ...validData };
-      next();
-    } else {
-      res.status(statusCode).json(data);
-    }
-  };
-
-interface Middleware {
-  handle: (httpRequest: any) => Promise<HttpResponse>;
-}
+import { Middleware } from '@/application/middlewares';
+import { adaptExpressMiddleware } from '@/main/adapters';
 
 describe('ExpressMiddleware', () => {
   let req: Request;
