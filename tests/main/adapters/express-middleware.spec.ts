@@ -3,11 +3,13 @@ import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { mock, MockProxy } from 'jest-mock-extended';
 import { HttpResponse } from '@/application/helpers';
 
-type Adatper = (middleware: Middleware) => RequestHandler;
+type Adapter = (middleware: Middleware) => RequestHandler;
 
-const adaptExpressMiddleware: Adatper =
+const adaptExpressMiddleware: Adapter =
   middleware => async (req, res, next) => {
-    await middleware.handle({ ...req.headers });
+    const { statusCode, data } = await middleware.handle({ ...req.headers });
+
+    res.status(statusCode).json(data);
   };
 
 interface Middleware {
@@ -26,6 +28,10 @@ describe('ExpressMiddleware', () => {
     res = getMockRes().res;
     next = getMockRes().next;
     middleware = mock();
+    middleware.handle.mockResolvedValue({
+      statusCode: 200,
+      data: {},
+    });
   });
 
   beforeEach(() => {
@@ -40,9 +46,24 @@ describe('ExpressMiddleware', () => {
   });
 
   it('should call handle with empty request', async () => {
-    await sut(getMockReq(), res, next);
+    req = getMockReq();
+    await sut(req, res, next);
 
     expect(middleware.handle).toHaveBeenCalledWith({});
     expect(middleware.handle).toHaveBeenCalledTimes(1);
+  });
+
+  it('should respond with correct error and statusCode', async () => {
+    const error = { error: 'any_error' };
+    middleware.handle.mockResolvedValueOnce({
+      statusCode: 500,
+      data: error,
+    });
+    await sut(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.status).toHaveBeenCalledTimes(1);
+    expect(res.json).toHaveBeenCalledWith(error);
+    expect(res.json).toHaveBeenCalledTimes(1);
   });
 });
