@@ -47,7 +47,7 @@ describe('ExpressMiddleware', () => {
   });
 
   it('should respond with correct error and statusCode', async () => {
-    const error = { error: 'any_error' };
+    const error = new Error('any_error');
     middleware.handle.mockResolvedValueOnce({
       statusCode: 500,
       data: error,
@@ -56,7 +56,7 @@ describe('ExpressMiddleware', () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.status).toHaveBeenCalledTimes(1);
-    expect(res.json).toHaveBeenCalledWith(error);
+    expect(res.json).toHaveBeenCalledWith({ error: error.message });
     expect(res.json).toHaveBeenCalledTimes(1);
   });
 
