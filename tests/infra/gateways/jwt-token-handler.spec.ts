@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { TokenGenerator, TokenValidator } from '@/domain/contracts/crypto';
+import { TokenGenerator, TokenValidator } from '@/domain/contracts/gateways';
 import { JwtTokenHandler } from '@/infra/crypto';
 
 jest.mock('jsonwebtoken');
@@ -32,7 +32,7 @@ describe('JwtTokenGenerator', () => {
     });
 
     it('should call sign with correct params', async () => {
-      await sut.generateToken(sutParams);
+      await sut.generate(sutParams);
 
       expect(fakeJwt.sign).toHaveBeenCalledWith(
         { key: sutParams.key },
@@ -45,7 +45,7 @@ describe('JwtTokenGenerator', () => {
     });
 
     it('should return a token on success', async () => {
-      const generatedToken = await sut.generateToken(sutParams);
+      const generatedToken = await sut.generate(sutParams);
 
       expect(generatedToken).toBe(token);
     });
@@ -56,7 +56,7 @@ describe('JwtTokenGenerator', () => {
         throw jwtError;
       });
 
-      const promise = sut.generateToken(sutParams);
+      const promise = sut.generate(sutParams);
 
       await expect(promise).rejects.toEqual(jwtError);
     });
@@ -75,14 +75,14 @@ describe('JwtTokenGenerator', () => {
     });
 
     it('should call sign with correct params', async () => {
-      await sut.validateToken(sutParams);
+      await sut.validate(sutParams);
 
       expect(fakeJwt.verify).toHaveBeenCalledWith(sutParams.token, secretKey);
       expect(fakeJwt.verify).toHaveBeenCalledTimes(1);
     });
 
     it('should return the key used to sign', async () => {
-      const generatedKey = await sut.validateToken(sutParams);
+      const generatedKey = await sut.validate(sutParams);
 
       expect(generatedKey).toBe(key);
     });
@@ -93,7 +93,7 @@ describe('JwtTokenGenerator', () => {
         throw error;
       });
 
-      const promise = sut.validateToken(sutParams);
+      const promise = sut.validate(sutParams);
 
       await expect(promise).rejects.toThrow(error);
     });
@@ -101,7 +101,7 @@ describe('JwtTokenGenerator', () => {
     it('should throw if verify returns null', async () => {
       fakeJwt.verify.mockImplementationOnce(() => null);
 
-      const promise = sut.validateToken(sutParams);
+      const promise = sut.validate(sutParams);
 
       await expect(promise).rejects.toThrow();
     });
