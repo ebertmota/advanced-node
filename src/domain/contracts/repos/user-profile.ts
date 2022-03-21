@@ -1,6 +1,7 @@
 export namespace SaveUserPicture {
   export type Input = {
     pictureUrl?: string;
+    initials?: string;
   };
 }
 
@@ -12,8 +13,12 @@ export namespace LoadUserProfile {
   export type Input = {
     id: string;
   };
+
+  export type Output = {
+    name?: string;
+  };
 }
 
 export interface LoadUserProfile {
-  load: (params: LoadUserProfile.Input) => Promise<void>;
+  load: (params: LoadUserProfile.Input) => Promise<LoadUserProfile.Output>;
 }
