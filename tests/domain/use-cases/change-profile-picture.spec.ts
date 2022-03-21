@@ -5,12 +5,12 @@ import {
   setupChangeProfilePicture,
 } from '@/domain/use-cases';
 import { UploadFile, UUIDGenerator } from '@/domain/contracts/gateways';
-import { SaveUserPicture } from '@/domain/contracts/repos';
+import { SaveUserPicture, LoadUserProfile } from '@/domain/contracts/repos';
 
 describe('ChangeProfilePicture', () => {
   let uuidHandler: MockProxy<UUIDGenerator>;
   let fileStorage: MockProxy<UploadFile>;
-  let userProfileRepo: MockProxy<SaveUserPicture>;
+  let userProfileRepo: MockProxy<SaveUserPicture & LoadUserProfile>;
   let uuid: string;
   let sut: ChangeProfilePicture;
 
@@ -53,6 +53,22 @@ describe('ChangeProfilePicture', () => {
       initials: undefined,
     });
     expect(userProfileRepo.savePicture).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call LoadUserProfile with correct input', async () => {
+    const id = 'any_id';
+    await sut({ id, file: undefined });
+
+    expect(userProfileRepo.load).toHaveBeenCalledWith({
+      id,
+    });
+    expect(userProfileRepo.load).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not call LoadUserProfile if file is not undefined', async () => {
+    await sut({ id: 'any_id', file: Buffer.from('any_buffer') });
+
+    expect(userProfileRepo.load).not.toHaveBeenCalled();
   });
 
   it('should call SaveUserPicture with correct input when file is undefined', async () => {
