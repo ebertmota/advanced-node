@@ -12,13 +12,15 @@ type Setup = (
 export const setupChangeProfilePicture: Setup =
   (fileStorage, uuidHandler, userProfileRepo) =>
   async ({ id, file }) => {
+    let pictureUrl: string | undefined;
+
     if (file) {
-      const pictureUrl = await fileStorage.upload({
+      pictureUrl = await fileStorage.upload({
         file,
         key: uuidHandler.generate({
           key: id,
         }),
       });
-      await userProfileRepo.savePicture({ pictureUrl });
     }
+    await userProfileRepo.savePicture({ pictureUrl });
   };

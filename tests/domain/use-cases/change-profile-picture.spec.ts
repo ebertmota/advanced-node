@@ -53,4 +53,14 @@ describe('ChangeProfilePicture', () => {
     });
     expect(userProfileRepo.savePicture).toHaveBeenCalledTimes(1);
   });
+
+  it('should call SaveUserPicture with correct input when file is undefined', async () => {
+    const id = 'any_id';
+    await sut({ id, file: undefined });
+
+    expect(userProfileRepo.savePicture).toHaveBeenCalledWith({
+      pictureUrl: undefined,
+    });
+    expect(userProfileRepo.savePicture).toHaveBeenCalledTimes(1);
+  });
 });
