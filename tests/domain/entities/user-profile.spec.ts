@@ -84,4 +84,14 @@ describe('UserProfile', () => {
       initials: undefined,
     });
   });
+
+  it('should create with empty initials and pictureUrl if name is empty', () => {
+    sut.setPicture({ name: '' });
+
+    expect(sut).toEqual({
+      id,
+      pictureUrl: undefined,
+      initials: undefined,
+    });
+  });
 });
