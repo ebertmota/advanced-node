@@ -45,9 +45,11 @@ export const setupChangeProfilePicture: Setup =
     try {
       await userProfileRepo.savePicture(userProfile);
     } catch {
-      await fileStorage.delete({
-        key,
-      });
+      if (file) {
+        await fileStorage.delete({
+          key,
+        });
+      }
     }
 
     return userProfile;
