@@ -18,6 +18,9 @@ describe('ChangeProfilePicture', () => {
   let uuid: string;
   let sut: ChangeProfilePicture;
 
+  let id: string;
+  let file: Buffer;
+
   beforeAll(() => {
     fileStorage = mock();
     fileStorage.upload.mockResolvedValue('any_url');
@@ -26,6 +29,8 @@ describe('ChangeProfilePicture', () => {
     userProfileRepo.load.mockResolvedValue({ name: 'Ebert da Silva Mota' });
     uuid = 'any_uuid';
     uuidHandler.generate.mockReturnValue(uuid);
+    id = 'any_id';
+    file = Buffer.from('any_buffer');
   });
 
   beforeEach(() => {
@@ -33,8 +38,6 @@ describe('ChangeProfilePicture', () => {
   });
 
   it('should call UploadFile with correct input', async () => {
-    const file = Buffer.from('any_buffer');
-    const id = 'any_id';
     await sut({ id, file });
 
     expect(fileStorage.upload).toHaveBeenCalledWith({ file, key: uuid });
@@ -42,15 +45,12 @@ describe('ChangeProfilePicture', () => {
   });
 
   it('should not call UploadFile when file is undefined', async () => {
-    const id = 'any_id';
     await sut({ id, file: undefined });
 
     expect(fileStorage.upload).not.toHaveBeenCalled();
   });
 
   it('should call SaveUserPicture with correct input', async () => {
-    const file = Buffer.from('any_buffer');
-    const id = 'any_id';
     await sut({ id, file });
 
     expect(userProfileRepo.savePicture).toHaveBeenCalledWith(
@@ -60,18 +60,33 @@ describe('ChangeProfilePicture', () => {
   });
 
   it('should call LoadUserProfile with correct input', async () => {
-    const id = 'any_id';
     await sut({ id, file: undefined });
 
     expect(userProfileRepo.load).toHaveBeenCalledWith({
-      id: 'any_id',
+      id,
     });
     expect(userProfileRepo.load).toHaveBeenCalledTimes(1);
   });
 
   it('should not call LoadUserProfile if file is not undefined', async () => {
-    await sut({ id: 'any_id', file: Buffer.from('any_buffer') });
+    await sut({ id, file });
 
     expect(userProfileRepo.load).not.toHaveBeenCalled();
+  });
+
+  it('should return correct data on success', async () => {
+    mocked(UserProfile).mockImplementationOnce(() => ({
+      setPicture: jest.fn(),
+      id: 'any_id',
+      picture_url: 'any_picture_url',
+      initials: 'any_initials',
+    }));
+
+    const result = await sut({ id, file });
+
+    expect(result).toMatchObject({
+      picture_url: 'any_picture_url',
+      initials: 'any_initials',
+    });
   });
 });

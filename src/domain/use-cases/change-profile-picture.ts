@@ -3,7 +3,11 @@ import { LoadUserProfile, SaveUserPicture } from '../contracts/repos';
 import { UserProfile } from '../entities';
 
 type Input = { id: string; file?: Buffer };
-export type ChangeProfilePicture = (input: Input) => Promise<void>;
+type Output = {
+  picture_url?: string;
+  initials?: string;
+};
+export type ChangeProfilePicture = (input: Input) => Promise<Output>;
 type Setup = (
   fileStorage: UploadFile,
   uuidHandler: UUIDGenerator,
@@ -13,19 +17,29 @@ type Setup = (
 export const setupChangeProfilePicture: Setup =
   (fileStorage, uuidHandler, userProfileRepo) =>
   async ({ id, file }) => {
-    const data: { pictureUrl?: string; name?: string } = {};
-
-    if (file) {
-      data.pictureUrl = await fileStorage.upload({
-        file,
+    const uploadFile = async (fileName: Buffer): Promise<string> => {
+      return fileStorage.upload({
+        file: fileName,
         key: uuidHandler.generate({
           key: id,
         }),
       });
-    } else {
-      data.name = (await userProfileRepo.load({ id })).name;
-    }
+    };
+
+    const loadUserName = async (): Promise<string | undefined> => {
+      const user = await userProfileRepo.load({ id });
+
+      return user.name;
+    };
+
+    const data = {
+      pictureUrl: file ? await uploadFile(file) : undefined,
+      name: !file ? await loadUserName() : undefined,
+    };
+
     const userProfile = new UserProfile(id);
     userProfile.setPicture(data);
     await userProfileRepo.savePicture(userProfile);
+
+    return userProfile;
   };
