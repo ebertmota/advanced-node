@@ -44,12 +44,13 @@ export const setupChangeProfilePicture: Setup =
 
     try {
       await userProfileRepo.savePicture(userProfile);
-    } catch {
+    } catch (error) {
       if (file) {
         await fileStorage.delete({
           key,
         });
       }
+      throw error;
     }
 
     return userProfile;
