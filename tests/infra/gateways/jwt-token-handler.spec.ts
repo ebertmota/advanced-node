@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { TokenGenerator, TokenValidator } from '@/domain/contracts/gateways';
-import { JwtTokenHandler } from '@/infra/crypto';
+import { JwtTokenHandler } from '@/infra/gateways';
 
 jest.mock('jsonwebtoken');
 

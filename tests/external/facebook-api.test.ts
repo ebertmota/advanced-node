@@ -1,5 +1,5 @@
-import { FacebookApi } from '@/infra/apis';
-import { AxiosHttpClient, HttpGetClient } from '@/infra/http';
+import { HttpGetClient } from '@/domain/contracts/gateways';
+import { FacebookApi, AxiosHttpClient } from '@/infra/gateways';
 import { env } from '@/main/config';
 
 describe('FacebookApi', () => {
